@@ -268,14 +268,20 @@
 	<string id="st_compatible_locations">
 		<text>Защищает до:</text>
 	</string>
+	<string id="st_tier_southern_prefix">
+		<text>Южные локации</text>
+	</string>
+	<string id="st_tier_central_prefix">
+		<text>Центральные локации</text>
+	</string>
 	<string id="st_tier_southern">
 		<text>Южные локации (Свалка, Янтарь)</text>
 	</string>
 	<string id="st_tier_central">
-		<text>Центральные локации (Мёртвый город, Склады и др.)</text>
+		<text>Центральные локации (Мёртвый город, Росток и др.)</text>
 	</string>
 	<string id="st_tier_northern">
-		<text>Северные локации (Лиманск, Припять и др.)</text>
+		<text>Северные локации (Радар, Рыжий лес и др.)</text>
 	</string>
 
 

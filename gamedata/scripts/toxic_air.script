@@ -213,6 +213,7 @@ local function get_compatible_locations(air_immunity)
 	local compatible = {}
 	
 	-- Collect all non-safe locations where this item provides protection
+	-- Note: protection requires immunity STRICTLY GREATER than toxicity
 	for level_name, toxicity in pairs(toxic_level) do
 		if toxicity > 0 and air_immunity > toxicity then
 			local display_key = level_display_names[level_name]
@@ -284,25 +285,24 @@ local underground_labs = {
 	{key = "st_loc_warlab", tox = 1.0},
 }
 
--- Format compatible locations for display - hybrid tier system
+-- Format compatible locations for display - shows tier name + actual highest locations
 local function format_compatible_locations(air_immunity)
-	-- Determine max surface tier and if underground is fully covered
-	local max_tier = 0  -- 1=southern, 2=central, 3=northern
+	-- Collect all protected surface locations with their toxicity
+	local protected = {}
+	local max_tox = 0
 	
+	-- Note: protection requires immunity STRICTLY GREATER than toxicity
 	for level_name, toxicity in pairs(toxic_level) do
 		if toxicity > 0 and air_immunity > toxicity then
 			local display_key = level_display_names[level_name]
 			if display_key and display_key ~= "st_loc_underground_labs" then
-				local tier
-				if toxicity <= 0.1 then
-					tier = 1  -- Southern
-				elseif toxicity < 0.2 then
-					tier = 2  -- Central
-				else
-					tier = 3  -- Northern
-				end
-				if tier > max_tier then
-					max_tier = tier
+				protected[#protected + 1] = {
+					name = gc(display_key),
+					tox = toxicity,
+					key = display_key
+				}
+				if toxicity > max_tox then
+					max_tox = toxicity
 				end
 			end
 		end
@@ -316,18 +316,49 @@ local function format_compatible_locations(air_immunity)
 		end
 	end
 	
-	if max_tier == 0 then
+	if #protected == 0 then
 		return nil
 	end
 	
-	-- Format output based on max tier
-	local result
-	if max_tier == 1 then
-		result = "%c[d_green]" .. gc("st_tier_southern")
-	elseif max_tier == 2 then
-		result = "%c[d_orange]" .. gc("st_tier_central")
+	-- Sort by toxicity (highest first)
+	table.sort(protected, function(a, b) return a.tox > b.tox end)
+	
+	-- Group locations at the maximum toxicity level (within 0.02 tolerance)
+	local top_locations = {}
+	local seen_names = {}
+	for _, loc in ipairs(protected) do
+		if max_tox - loc.tox <= 0.02 then
+			if not seen_names[loc.name] then
+				seen_names[loc.name] = true
+				top_locations[#top_locations + 1] = loc.name
+			end
+		end
+	end
+	
+	-- Determine tier and color based on max toxicity
+	local tier_name = nil
+	local color
+	if max_tox <= 0.1 then
+		-- Southern (Garbage, Yantar)
+		color = "%c[d_green]"
+		tier_name = gc("st_tier_southern_prefix")
+	elseif max_tox <= 0.17 then
+		-- Central (Dead City, Rostok, Truck Cemetery)
+		color = "%c[d_orange]"
+		tier_name = gc("st_tier_central_prefix")
 	else
-		result = "%c[d_red]" .. gc("st_tier_northern")
+		-- Higher tiers - just show location names
+		color = "%c[d_red]"
+		tier_name = nil
+	end
+	
+	-- Build result string
+	local loc_str = table_concat(top_locations, ", ")
+	local result
+	if tier_name then
+		result = color .. tier_name .. " (" .. loc_str .. ")"
+	else
+		result = color .. loc_str
 	end
 	
 	-- Add underground info if any lab is covered

@@ -265,14 +265,20 @@
 	<string id="st_compatible_locations">
 		<text>Protects up to:</text>
 	</string>
+	<string id="st_tier_southern_prefix">
+		<text>Southern locations</text>
+	</string>
+	<string id="st_tier_central_prefix">
+		<text>Central locations</text>
+	</string>
 	<string id="st_tier_southern">
 		<text>Southern locations (Garbage, Yantar)</text>
 	</string>
 	<string id="st_tier_central">
-		<text>Central locations (Dead City, Army Warehouses, etc.)</text>
+		<text>Central locations (Dead City, Rostok, etc.)</text>
 	</string>
 	<string id="st_tier_northern">
-		<text>Northern locations (Limansk, Pripyat, etc.)</text>
+		<text>Northern locations (Radar, Red Forest, etc.)</text>
 	</string>
 	<string id="st_tank_equip">
 		<text>Equip Tank</text>
