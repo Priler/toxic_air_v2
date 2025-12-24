@@ -131,7 +131,6 @@ local toxic_level = {
 		["l02_garbage"]					= 0.075,		-- 44 irl mins to lose health from 1.0 to 0 without any protection
 		["l08_yantar"]						= 0.065,
 
-
 	-- < 0.2
 		["k02_trucks_cemetery"]		= 0.17,
 		["jupiter"]								= 0.18,
@@ -509,7 +508,7 @@ function load_state(m_data)
 	tanks = m_data.tanks or {}
 end
 
------------------- manage equipment slot/ruck/belt -------------
+-- ### manage equipment slot/ruck/belt
 function available_equipment(item)
 	if not item then return false end
 	
@@ -735,7 +734,7 @@ function filter_to_slot(equip)
 	end
 end
 
--------------- damage actor / manage ppe and sound -----------
+-- ### damage actor / manage ppe and sound
 -- Timing scales with zone toxicity and damage multiplier
 -- In max toxic zone (1.0) at default 2.0 multiplier: ~40s to death
 -- In Jupiter (0.18) at default 2.0 multiplier: ~220s to death
@@ -856,14 +855,13 @@ function cough_snd()
 
 end
 
-
 function send_actor_msg()
 	if not cached_config.ppe_toggle then return true end
 	actor_menu.set_msg(1, gc("st_air_is_toxic"), 3)
 	return true
 end
 
------------------------- smart terrain check ----------------------
+-- ### smart terrain check
 function actor_in_safe_zone()
 	local id = smart_terrain.nearest_to_actor_smart.id
 	local smart = id and alife_object(id)
@@ -877,7 +875,7 @@ function actor_in_safe_zone()
 	return false
 end
 
-------------------------------- filters ----------------------------
+-- ### filters
 function filter_cond_prot()
 	filter_air_protection = 0
 	--if (toxic_dmg <= 0) then return end
@@ -1230,7 +1228,7 @@ function ui_inventory.UIInventory:Action_Custom(obj, bag, temp, i)
 	end
 end
 
------------------- anim (stole some from fdda) -------------------
+-- ### anim (stole some from fdda)
 local cur_slot, hud_fov, det_active
 local anm_check_attempts = 0
 local MAX_ANM_CHECK_ATTEMPTS = 30  -- Give up after 30 attempts (~3 seconds)
@@ -1413,7 +1411,7 @@ function restore()
 	return true
 end
 
------------------------------ upd main --------------------------
+-- ### upd main
 function actor_on_update()
 	local tg = time_global()
 	if (tmr_upd and tg < tmr_upd) then return end
@@ -1542,7 +1540,7 @@ function Metrofilters()
 
 end
 
------------------------------ binder ---------------------------
+-- ### binder
 function bind(obj)
 	obj:bind_object(oxygen_tank(obj))
 end
@@ -1634,7 +1632,7 @@ end
 function oxygen_tank:load(stpk)
 end
 
--------------------------- trader artiinject -------------------------
+-- ### trader artiinject
 local trade_table = {
 
 	["bandit"] = {
@@ -1889,7 +1887,7 @@ function trader_autoinject.update(npc)
     oxygen_stock(npc)
 end
 
--------------------------- loot -------------------------
+-- ### loot
 
 -- min: 5% = 35 ; 	10% = 50 ;		15% = 60 ;		20% = 65 ;		25% = 70 ;		30% = 74 ; 		35% = 77 ; 		40% = 80
 local loot_table = {
@@ -2014,7 +2012,7 @@ function death_manager.spawn_cosmetics(npc, npc_id, npc_comm, npc_rank, visual, 
     spawn_oxygen_tank(npc, npc_rank, npc_comm)
 end
 
-------------------- UI monkey patch, tnx RavenAscendant ;] -----------------------------
+-- ### UI monkey patch, tnx RavenAscendant ;]
 base_add_bar = utils_ui.UICellItem.Add_ProgressBar
 local XMLP = CScriptXmlInit()
 XMLP:ParseFile("utils.xml")
@@ -2029,7 +2027,7 @@ function utils_ui.UICellItem:Add_ProgressBar(xml, obj, sec, clsid)
     base_add_bar(self, xml, obj, sec, clsid)
 end
 
----------------------------------------- HUD ------------------------------------------------
+-- ### HUD
 
 HUD = nil
 
@@ -2100,7 +2098,6 @@ end
 function ToxicAir:__finalize()
 end
 
------------------------------------------------------------------------------------------------
 function server_entity_on_unregister(se_obj, typ)
     local id = se_obj.id
     tank_cond[id] = nil
@@ -2121,9 +2118,8 @@ function on_option_change()
 	update_keybind_settings()
 end
 
------------------------------------------------------------------------------------------------
 -- Keybind system for filter toggle
------------------------------------------------------------------------------------------------
+
 local mcm_keybinds = ui_mcm and ui_mcm.key_hold
 local filter_key = 0
 local filter_modifier = 0

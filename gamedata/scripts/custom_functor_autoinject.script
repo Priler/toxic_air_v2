@@ -6,7 +6,6 @@ Can override ltx-defined functors and can remove the override to return back to 
 
 To use in your script look at example below
 
----------------------------------------------------------------------------------------------------------------------
 local function name_condition_function(obj, bag, mode)
 	if obj then
 		return true
@@ -29,8 +28,6 @@ end
 
 local add_functor = custom_functor_autoinject.add_functor
 add_functor("my_name_of_functor", name_condition_function, name_function, action_condition_function, action_function, override_bags<true, false>)
----------------------------------------------------------------------------------------------------------------------
-
 to add your functor you use add_functor function which requires these arguments in order:
    name: string, your name of your functor, can be any string. 
          If the name of functor already exists this function will overwrite functions for it
@@ -48,21 +45,14 @@ bag: current bag, list of possible bags: {"actor_equ","actor_belt","actor_bag","
 mode: current mode, list of possible modes: {"inventory" , "loot" , "trade" , "repair"}
 bag and mode is not enabled unless you set override_bags flag to true
 
-
 removal of functor is done by calling this
 
---------------------------------------------------------------------------------------
 local remove_functor = custom_functor_autoinject.remove_functor
 remove_functor("my_name_of_functor")
---------------------------------------------------------------------------------------
-
 you can also override existing functors defined in item's ltx by using this
 
----------------------------------------------------------------------------------------------------------------------
 local override_functor = custom_functor_autoinject.override_functor
 override_functor(slot, name_condition_function, name_function, action_condition_function, action_function, override_bags<true, false>)
----------------------------------------------------------------------------------------------------------------------
-
 arguments are same, except you have to provide the slot (first argument) for your override. The slots are 1-10
 for example if item's ltx have use1_functor and use1_action_functor then
 if you want to override it you have to provide slot 1
@@ -73,11 +63,8 @@ and check condition for firing in name_function and action_function
 
 removal of override is done by calling this
 
---------------------------------------------------------------------------------------
 local remove_override = custom_functor_autoinject.remove_override
 remove_override(slot)
---------------------------------------------------------------------------------------
-
 --]]
 
 local function func_index(t,a,b)

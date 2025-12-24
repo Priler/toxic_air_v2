@@ -1,4 +1,3 @@
--- If you don't use MCM, change your defaults from here.
 local defaults = {
 	["mono_sin_exception"] = true,
 	["enable_hud"] = true,

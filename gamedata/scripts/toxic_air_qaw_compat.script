@@ -1,12 +1,13 @@
 --[[
-    Toxic Air - Quick Action Wheel Compatibility
+    Quick Action Wheel Compatibility
     Adds filter support to Quick Action Wheel mod by HarukaSai
-    
+
     If Quick Action Wheel is installed, this script:
     - Registers filters as a new item class that can be added to the wheel
     - Right-click filter in inventory -> "Add to quick wheel"
     - Click filter in wheel -> toggles filter on/off (same as keybind)
     - Also adds right-click "Equip/Remove Filter" option
+    - etc
 ]]
 
 -- Filter sections from toxic_air
