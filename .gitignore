@@ -1,0 +1,6 @@
+*.7z
+other_mods/
+*.zip
+build_fomod.ps1
+build_fomod.bat
+_fomod_staging/

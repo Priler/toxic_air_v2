@@ -1,0 +1,44 @@
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://qconsulting.ca/fo3/ModConfig5.0.xsd">
+	<moduleName>Toxic Air v2 REDUX</moduleName>
+	<requiredInstallFiles>
+		<folder source="00_core" destination="" priority="0" />
+	</requiredInstallFiles>
+	<installSteps order="Explicit">
+		<installStep name="Options">
+			<optionalFileGroups order="Explicit">
+				<group name="Economy preset" type="SelectExactlyOne">
+					<plugins order="Explicit">
+						<plugin name="Anomaly (default prices)">
+							<description>Default item prices, balanced for vanilla Anomaly economy. Pick this for Anomaly or non-GAMMA modpacks.</description>
+							<typeDescriptor>
+								<type name="Optional" />
+							</typeDescriptor>
+						</plugin>
+						<plugin name="GAMMA economy rebalance">
+							<description>Overhauls filter and oxygen tank prices for the GAMMA economy: items cost roughly 2x to 10x more, matching GAMMA's scarcity-driven progression. Installs a DLTX price patch on top of the core mod, no base files replaced. Requires modded exes (included in GAMMA).</description>
+							<files>
+								<folder source="10_gamma_economy" destination="" priority="1" />
+							</files>
+							<typeDescriptor>
+								<type name="Optional" />
+							</typeDescriptor>
+						</plugin>
+					</plugins>
+				</group>
+				<group name="Compatibility patches" type="SelectAny">
+					<plugins order="Explicit">
+						<plugin name="FDDA Redone animations patch">
+							<description>Routes tank and filter animations through the FDDA Redone animation manager and adds a dedicated oxygen tank HUD model. Requires the "Food, drug and drinks animations - Redone" addon (included in GAMMA). Leave unchecked if you do not have FDDA Redone.</description>
+							<files>
+								<folder source="20_fdda_patch" destination="" priority="2" />
+							</files>
+							<typeDescriptor>
+								<type name="Optional" />
+							</typeDescriptor>
+						</plugin>
+					</plugins>
+				</group>
+			</optionalFileGroups>
+		</installStep>
+	</installSteps>
+</config>

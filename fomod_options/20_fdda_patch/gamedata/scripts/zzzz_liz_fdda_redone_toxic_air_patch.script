@@ -1,0 +1,68 @@
+
+toxic_air.play_ta_anm = function (tank_anm_type, filter_anm_type, filter_anm_delay)
+	if not toxic_air_mcm.get_config("filter_animation") then return end
+	if not toxic_air.allow_anm_play then return end
+
+    if tank_anm_type ~= nil then
+        if ini_sys:section_exist("ta_af_oxygen_tank_1_hud") then
+            lam2.add_action(get_template_action_tank_animation2(tank_anm_type))
+        else
+            lam2.add_action(get_template_action_tank_animation(tank_anm_type))
+        end
+    end
+
+    if filter_anm_type ~= nil then
+        lam2.add_action(get_tmeplate_action_filter_animation(filter_anm_type))
+    end
+end
+
+
+function get_template_action_tank_animation(tank_anm_type)
+    local a = {
+        tag = "toxic_air_tank_anim",
+        hands = 2,
+        can_skip = false,
+        cam = "camera_effects\\pripyat_horror1.anm",
+        snd = "toxic_air\\ta_tank_" .. tank_anm_type,
+        enter = function (self)
+            hide_hud_inventory()
+	        game.only_allow_movekeys(true)
+            game.set_actor_allow_ladder(false)
+            level.add_cam_effector(self.cam, 105613, false, "", 0, false)
+            local tank_snd = sound_object(self.snd)
+            tank_snd:play_no_feedback(db.actor, sound_object.s2d, 0, VEC_ZERO, 1.0, 1.0)
+        end,
+        execute = function (self, time)
+            if time > toxic_air.tank_anm_length then
+                return lam2.states.success
+            end
+            return lam2.states.running
+        end,
+        exit = function (self)
+	        game.only_allow_movekeys(false)
+            game.set_actor_allow_ladder(true)
+        end
+    }
+    return a
+end
+
+function get_template_action_tank_animation2(anm_type)
+    local a = lam2.get_template_action_play_animation()
+    a.tag = "toxic_air_tank_anim"
+    a.sec = "ta_af_oxygen_tank_1_hud"
+    a.anm = "anm_" .. anm_type
+    a.cam = "cam_" .. anm_type
+    a.snd = "snd_" .. anm_type
+    return a
+end
+
+
+function get_tmeplate_action_filter_animation(filter_anm_type)
+    local a = lam2.get_template_action_play_animation()
+    a.tag = "toxic_air_filter_anim"
+    a.sec = "ta_filter_" .. filter_anm_type .. "_hud"
+    a.anm = "anm_filter_show"
+    a.hands = 2
+    a.can_skip = false
+    return a
+end
