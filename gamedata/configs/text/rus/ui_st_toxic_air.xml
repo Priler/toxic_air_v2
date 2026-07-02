@@ -7,10 +7,10 @@
 
 
 	<string id="ui_mcm_toxic_air_title">
-		<text>Токсичный Воздух</text>
+		<text>Токсичный Воздух REDUX</text>
 	</string>
 	<string id="ui_mcm_menu_toxic_air">
-		<text>Токсичный Воздух</text>
+		<text>Токсичный Воздух REDUX</text>
 	</string>
 
 	<string id="ui_mcm_toxic_air_mono_sin_exception">
@@ -402,6 +402,53 @@
 	</string>
 	<string id="st_up_to">
 		<text>до</text>
+	</string>
+
+	<string id="ui_mcm_toxic_air_toxic_warning_toggle">
+		<text>Предупреждение о токсичном воздухе</text>
+	</string>
+	<string id="ui_mcm_toxic_air_toxic_warning_toggle_desc">
+		<text>Включить/выключить экранное сообщение "Воздух слишком токсичен" при входе в токсичную зону без достаточной защиты дыхания.</text>
+	</string>
+	<string id="ui_mcm_toxic_air_hud_scale">
+		<text>Масштаб HUD</text>
+	</string>
+	<string id="ui_mcm_toxic_air_hud_scale_desc">
+		<text>Размер экранного индикатора баллона/фильтра.</text>
+	</string>
+	<string id="ui_mcm_toxic_air_hud_live_edit">
+		<text>Переместить HUD (в игре, вживую)</text>
+	</string>
+	<string id="st_toxic_air_hud_editor_title">
+		<text>HUD Toxic Air - положение и масштаб</text>
+	</string>
+
+	<string id="ui_mcm_menu_toxic_air_hud">
+		<text>HUD</text>
+	</string>
+	<string id="ui_mcm_menu_toxic_air_gameplay">
+		<text>Геймплей</text>
+	</string>
+	<string id="ui_mcm_menu_toxic_air_filters">
+		<text>Фильтры</text>
+	</string>
+	<string id="ui_mcm_menu_toxic_air_warnings">
+		<text>Предупреждения и звук</text>
+	</string>
+	<string id="ui_mcm_menu_toxic_air_trader">
+		<text>Торговцы и лут</text>
+	</string>
+	<string id="ui_mcm_menu_toxic_air_keybind">
+		<text>Клавиша</text>
+	</string>
+	<string id="ui_mcm_menu_toxic_air_advanced">
+		<text>Дополнительно</text>
+	</string>
+	<string id="toxic_air_filters_destroy_empty_filters_mode_lst_destroy">
+		<text>Уничтожить</text>
+	</string>
+	<string id="toxic_air_filters_destroy_empty_filters_mode_lst_disassemble">
+		<text>Разобрать</text>
 	</string>
 
 </string_table>

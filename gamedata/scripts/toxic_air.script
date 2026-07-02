@@ -2045,7 +2045,7 @@ function ToxicAir:Update()
 end
 
 function ToxicAir:UpdPos()
-    self.bg:SetWndPos(vector2():set(toxic_air_mcm.get_config("position_x"), toxic_air_mcm.get_config("position_y")))
+    toxic_air_mcm.apply_hud_layout(self)
 end
 
 function ToxicAir:__finalize()
@@ -2096,10 +2096,10 @@ local keybind_modes = {
 function update_keybind_settings()
     if not ui_mcm then return end
 
-    -- Always read keybind settings
-    filter_key = ui_mcm.get("toxic_air/filter_keybind") or 0
-    filter_mode = ui_mcm.get("toxic_air/filter_keybind_mode") or 0
-    filter_modifier = ui_mcm.get("toxic_air/filter_keybind_modifier") or 0
+    -- Always read keybind settings (paths resolved via the MCM subtab map)
+    filter_key = toxic_air_mcm.get_config("filter_keybind") or 0
+    filter_mode = toxic_air_mcm.get_config("filter_keybind_mode") or 0
+    filter_modifier = toxic_air_mcm.get_config("filter_keybind_modifier") or 0
 
     -- Only do dynamic callback registration if MCM keybinds are supported
     if mcm_keybinds then

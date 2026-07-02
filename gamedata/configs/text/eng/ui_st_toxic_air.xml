@@ -7,10 +7,41 @@
 
 
 	<string id="ui_mcm_toxic_air_title">
-		<text>Toxic Air</text>
+		<text>Toxic Air REDUX</text>
 	</string>
 	<string id="ui_mcm_menu_toxic_air">
-		<text>Toxic Air</text>
+		<text>Toxic Air REDUX</text>
+	</string>
+
+	<!-- MCM subtab names -->
+	<string id="ui_mcm_menu_toxic_air_hud">
+		<text>HUD</text>
+	</string>
+	<string id="ui_mcm_menu_toxic_air_gameplay">
+		<text>Gameplay</text>
+	</string>
+	<string id="ui_mcm_menu_toxic_air_filters">
+		<text>Filters</text>
+	</string>
+	<string id="ui_mcm_menu_toxic_air_warnings">
+		<text>Warnings and Sound</text>
+	</string>
+	<string id="ui_mcm_menu_toxic_air_trader">
+		<text>Trader and Loot</text>
+	</string>
+	<string id="ui_mcm_menu_toxic_air_keybind">
+		<text>Keybind</text>
+	</string>
+	<string id="ui_mcm_menu_toxic_air_advanced">
+		<text>Advanced</text>
+	</string>
+
+	<!-- Disassembly-mode dropdown entries (path-based ids, no ui_mcm_ prefix) -->
+	<string id="toxic_air_filters_destroy_empty_filters_mode_lst_destroy">
+		<text>Destroy</text>
+	</string>
+	<string id="toxic_air_filters_destroy_empty_filters_mode_lst_disassemble">
+		<text>Disassemble</text>
 	</string>
 
 	<string id="ui_mcm_toxic_air_mono_sin_exception">
@@ -32,6 +63,19 @@
 	</string>
 	<string id="ui_mcm_toxic_air_position_y">
 		<text>HUD Position Y</text>
+	</string>
+
+	<string id="ui_mcm_toxic_air_hud_scale">
+		<text>HUD Scale</text>
+	</string>
+	<string id="ui_mcm_toxic_air_hud_scale_desc">
+		<text>Size of the on-screen tank/filter HUD.</text>
+	</string>
+	<string id="ui_mcm_toxic_air_hud_live_edit">
+		<text>Reposition HUD (live in-game)</text>
+	</string>
+	<string id="st_toxic_air_hud_editor_title">
+		<text>Toxic Air HUD - position and scale</text>
 	</string>
 
 	<string id="ui_mcm_toxic_air_toxic_damage_mult">
