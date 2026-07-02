@@ -129,6 +129,13 @@
 		<text>Disable/Enable screen effects when in a toxic area without high enough air protection.</text>
 	</string>
 
+	<string id="ui_mcm_toxic_air_toxic_warning_toggle">
+		<text>Toxic Warning Message</text>
+	</string>
+	<string id="ui_mcm_toxic_air_toxic_warning_toggle_desc">
+		<text>Enable/Disable the "Air is too toxic" on-screen message shown when you enter a toxic area without high enough air protection.</text>
+	</string>
+
 	<string id="ui_mcm_toxic_air_destroy_empty_filters">
 		<text>Destroy Empty Filters</text>
 	</string>

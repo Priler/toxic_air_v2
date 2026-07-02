@@ -24,7 +24,7 @@ local filters = {
 local tanks = {
 ["af_oxygen_tank_1"] = 20,
 ["af_oxygen_tank_1soviet"] = 21,
-["af_oxygen_tank_2"] = 21, -- 22,
+["af_oxygen_tank_2"] = 22,
 ["af_oxygen_tank_3"] = 23,
 ["af_oxygen_tank_3military"] = 0,	-- 24 - debug item so it is set to zero to ignore
 }

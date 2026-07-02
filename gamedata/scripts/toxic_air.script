@@ -1,3 +1,11 @@
+--[[
+
+    Toxic Air v2 REDUX rewrite by Priler (http://github.com/Priler)
+    :::
+    Rewrite of the popular mod, with bugfixes and all-in-one ultimate experience.
+
+]] --
+
 -- Added messages to better communicate what is happening - ilrathCXV (last edit: 04/13/2024)
 
 -- Performance: localized global functions
@@ -7,23 +15,18 @@ local alife_create_item = alife_create_item
 local alife_object = alife_object
 local time_global = time_global
 local math_random = math.random
-local math_ceil = math.ceil
 local string_find = string.find
 local table_concat = table.concat
 
 -- Constants
 local PPE_EFFECTOR_ID = 20201
-local CAM_EFFECTOR_TANK = 105613
-local CAM_EFFECTOR_FILTER = 105612
 local UPDATE_INTERVAL = 1000
-local HUD_UPDATE_INTERVAL = 2000
 local OUTFIT_SLOT = 7
 local HELMET_SLOT = 12
 local DAMAGE_BASE_RATE = 0.0125 -- Base rate: ~80s to death at 1.0 mult in max toxic zone, scales with zone level
 
 local toxic_dmg = 0
 local tmr_upd
-local tmr_dgr
 local tank_cond = {}
 local tank_air_protection = 0
 local filter_air_protection = 0
@@ -91,6 +94,7 @@ local function refresh_config_cache()
     cached_config.metro_alert_10 = toxic_air_mcm.get_config("metro_alert_10")
     cached_config.metro_alert_0 = toxic_air_mcm.get_config("metro_alert_0")
     cached_config.ppe_toggle = toxic_air_mcm.get_config("ppe_toggle")
+    cached_config.toxic_warning_toggle = toxic_air_mcm.get_config("toxic_warning_toggle")
     cached_config.destroy_empty_filters = toxic_air_mcm.get_config("destroy_empty_filters")
     cached_config.destroy_empty_filters_threshold = toxic_air_mcm.get_config("destroy_empty_filters_threshold")
     cached_config.destroy_empty_filters_mode = toxic_air_mcm.get_config("destroy_empty_filters_mode")
@@ -115,6 +119,16 @@ local oxt_tbl = {
     ["af_mask_filter_fp5"] = true,
     ["af_mask_filter_3isg"] = true,
     ["af_mask_filter_r18"] = true,
+}
+
+-- Real oxygen tanks only. oxt_tbl above also holds filters, so tank-only
+-- checks (belt registration, "another tank" guard) must use this set
+local tank_sections_only = {
+    ["af_oxygen_tank_1"] = true,
+    ["af_oxygen_tank_1soviet"] = true,
+    ["af_oxygen_tank_2"] = true,
+    ["af_oxygen_tank_3"] = true,
+    ["af_oxygen_tank_3military"] = true,
 }
 
 local toxic_level = {
@@ -250,11 +264,11 @@ local function get_location_color(loc)
 
     -- Color by toxicity level
     if loc.tox <= 0.1 then
-        return "%c[d_green]" -- Easy: green (Garbage, Yantar)
+        return "%c[d_green]"  -- Easy: green (Garbage, Yantar)
     elseif loc.tox < 0.2 then
         return "%c[d_orange]" -- Medium: orange
     else
-        return "%c[d_red]" -- Hard: red
+        return "%c[d_red]"    -- Hard: red
     end
 end
 
@@ -368,8 +382,8 @@ local function format_compatible_locations(air_immunity)
             result = result .. "%c[ui_gray_1] + %c[d_red]" .. gc("st_loc_underground_labs")
         else
             result = result ..
-            "%c[ui_gray_1] + %c[d_red]" ..
-            gc("st_loc_underground_labs") .. " (" .. gc("st_up_to") .. " " .. lab_name .. ")"
+                "%c[ui_gray_1] + %c[d_red]" ..
+                gc("st_loc_underground_labs") .. " (" .. gc("st_up_to") .. " " .. lab_name .. ")"
         end
     end
 
@@ -489,7 +503,7 @@ end
 
 function first_upd_message()
     if (tank_air_protection + filter_air_protection) < toxic_dmg then
-        if cached_config.ppe_toggle then
+        if cached_config.toxic_warning_toggle then
             actor_menu.set_msg(1, gc("st_air_is_toxic"), 4)
         end
     end
@@ -524,38 +538,6 @@ function available_equipment(item)
     end
 
     return false
-end
-
-function get_radiation_protection(object)
-    local section_object = object:section()
-    local id_object = object:id()
-    local total_radiation_protection = 0
-
-    local se_object = alife_object(id_object)
-    if se_object then
-        local data = utils_stpk.get_item_data(se_object)
-
-        -- Get base radiation protection (no loop needed - just read the value)
-        local radiation_protection = utils_data.read_from_ini(ini_sys, section_object, "radiation_protection", "float", 0)
-        total_radiation_protection = radiation_protection * object:condition()
-
-        -- Add upgrade bonuses
-        if data.upgrades then
-            for k, v in pairs(data.upgrades) do
-                local upgrade_sect = utils_data.read_from_ini(ini_sys, tostring(v), "section", "string", nil)
-                if upgrade_sect then
-                    local upgrade_radiation_protection = utils_data.read_from_ini(ini_sys, upgrade_sect,
-                        "radiation_protection", "float", 0)
-                    if upgrade_radiation_protection then
-                        total_radiation_protection = total_radiation_protection + upgrade_radiation_protection
-                    end
-                end
-            end
-        end
-
-        return total_radiation_protection
-    end
-    return 0
 end
 
 function actor_on_before_hit(s_hit)
@@ -599,7 +581,7 @@ local remove_active_filter_silent
 
 -- tank_to_belt
 function tank_in_belt(tank)
-    if not (tank and oxt_tbl[tank:section()]) then return end
+    if not (tank and tank_sections_only[tank:section()]) then return end
 
     --	printf("tank: %s IN", tank:section())
 
@@ -673,7 +655,7 @@ function tank_in_belt(tank)
     -- Check 3: Already has another oxygen tank on belt
     local has_other_tank = false
     db.actor:iterate_belt(function(owner, belt_item)
-        if belt_item:id() ~= tank:id() and oxt_tbl[belt_item:section()] then
+        if belt_item:id() ~= tank:id() and tank_sections_only[belt_item:section()] then
             has_other_tank = true
         end
     end)
@@ -688,7 +670,6 @@ function tank_in_belt(tank)
     tanks[tank:id()] = true
 
     -- Set protection immediately (don't wait for next update cycle)
-    local helmet = db.actor:item_in_slot(HELMET_SLOT)
     if helmet then
         local stats = get_item_stats(tank:section())
         if stats.air_immunity then
@@ -814,21 +795,21 @@ function cough_snd()
     local cooldown_time
     local volume
     if effects_factor < 0.5 then
-        chance_to_play = 20 -- Light: 20% chance (15-60 seconds at 2.0 mult)
+        chance_to_play = 20  -- Light: 20% chance (15-60 seconds at 2.0 mult)
         cooldown_time = 5000 -- 5 seconds between coughs
-        volume = 0.5   -- 50% volume
+        volume = 0.5         -- 50% volume
     elseif effects_factor < 0.75 then
-        chance_to_play = 35 -- Medium: 35% chance (60-90 seconds at 2.0 mult)
+        chance_to_play = 35  -- Medium: 35% chance (60-90 seconds at 2.0 mult)
         cooldown_time = 4000 -- 4 seconds between coughs
-        volume = 0.7   -- 70% volume
+        volume = 0.7         -- 70% volume
     elseif effects_factor < 0.875 then
-        chance_to_play = 50 -- Severe: 50% chance (90-105 seconds at 2.0 mult)
+        chance_to_play = 50  -- Severe: 50% chance (90-105 seconds at 2.0 mult)
         cooldown_time = 3000 -- 3 seconds between coughs
-        volume = 0.85  -- 85% volume
+        volume = 0.85        -- 85% volume
     else
-        chance_to_play = 70 -- Critical: 70% chance (last 15 seconds before death)
+        chance_to_play = 70  -- Critical: 70% chance (last 15 seconds before death)
         cooldown_time = 2000 -- 2 seconds between coughs
-        volume = 1.0   -- 100% volume
+        volume = 1.0         -- 100% volume
     end
 
     if rnd(100) > chance_to_play then return end
@@ -854,7 +835,7 @@ function cough_snd()
 end
 
 function send_actor_msg()
-    if not cached_config.ppe_toggle then return true end
+    if not cached_config.toxic_warning_toggle then return true end
     actor_menu.set_msg(1, gc("st_air_is_toxic"), 3)
     return true
 end
@@ -1062,7 +1043,7 @@ function on_item_drag_dropped(give, take, slot_from, slot_to)
         prevent_anm = true -- Skip animation in tank_out_belt callback
 
         db.actor:iterate_belt(function(owner, tank)
-            if (oxt_tbl[tank:section()]) then
+            if (tank_sections_only[tank:section()]) then
                 tank_on_belt = true
                 db.actor:move_to_ruck(tank)
             end
@@ -1070,13 +1051,13 @@ function on_item_drag_dropped(give, take, slot_from, slot_to)
 
         -- play tank "off" anm if tank removed and delay filter anm
         if tank_on_belt then
-            play_ta_anm("off", "on", tank_anm_length)                               -- tank off + filter on animation
+            play_ta_anm("off", "on", tank_anm_length)                                           -- tank off + filter on animation
             if cached_config.filter_message_toggle then
                 news_manager.send_tip(db.actor, gc("st_filter_on_tanks_removed"), 0, nil, 5000) -- ilrathCXV (04/13/2024)
             end
         else
             -- or play filter "on" animation for slotted item
-            play_ta_anm(nil, "on", 0)                                 -- filter on animation
+            play_ta_anm(nil, "on", 0)                                             -- filter on animation
             if cached_config.filter_message_toggle then
                 news_manager.send_tip(db.actor, gc("st_filter_on"), 0, nil, 5000) -- ilrathCXV (04/13/2024)
             end
@@ -1150,27 +1131,28 @@ function ui_item.build_desc_header(obj, sec, str)
         -- Get filter display name
         local filter_name = gc(ini_sys:r_string_ex(filter_sec, "inv_name") or filter_sec)
         local filter_name_str = UI_COLORS.teal ..
-        gc("st_krug_xd") ..
-        " " ..
-        UI_COLORS.grey ..
-        gc("st_equipped_filter") .. " " .. UI_COLORS.grey_light .. filter_name .. "\\n" .. UI_COLORS.grey
+            gc("st_krug_xd") ..
+            " " ..
+            UI_COLORS.grey ..
+            gc("st_equipped_filter") .. " " .. UI_COLORS.grey_light .. filter_name .. "\\n" .. UI_COLORS.grey
         cond_str = UI_COLORS.teal ..
-        gc("st_krug_xd") ..
-        " " ..
-        UI_COLORS.grey .. gc("st_filter_descr") .. " " .. cond_clr .. tostring(con) .. "%" .. "\\n" .. UI_COLORS.grey
+            gc("st_krug_xd") ..
+            " " ..
+            UI_COLORS.grey .. gc("st_filter_descr") .. " " .. cond_clr .. tostring(con) .. "%" .. "\\n" .. UI_COLORS
+            .grey
         local dmg_check_str = (resist <= toxic_dmg) and (UI_COLORS.red .. gc("st_tank_doesnt_protect")) or
-        (UI_COLORS.grey_light .. round_idp(cond_loss * 10 * 60 * 100, 1) .. gc("st_tank_per_min"))
+            (UI_COLORS.grey_light .. round_idp(cond_loss * 10 * 60 * 100, 1) .. gc("st_tank_per_min"))
         cond_loss_str = UI_COLORS.teal ..
-        gc("st_krug_xd") ..
-        " " .. UI_COLORS.grey .. gc("st_filter_location_rate") .. " " .. dmg_check_str .. "\\n" .. UI_COLORS.grey
+            gc("st_krug_xd") ..
+            " " .. UI_COLORS.grey .. gc("st_filter_location_rate") .. " " .. dmg_check_str .. "\\n" .. UI_COLORS.grey
         -- Add compatible locations
         local locations = format_compatible_locations(resist)
         if locations then
             locations_str = UI_COLORS.teal ..
-            gc("st_krug_xd") ..
-            " " ..
-            UI_COLORS.grey ..
-            gc("st_compatible_locations") .. " " .. UI_COLORS.grey_light .. locations .. "\\n \\n" .. UI_COLORS.grey
+                gc("st_krug_xd") ..
+                " " ..
+                UI_COLORS.grey ..
+                gc("st_compatible_locations") .. " " .. UI_COLORS.grey_light .. locations .. "\\n \\n" .. UI_COLORS.grey
         else
             locations_str = "\\n \\n" .. UI_COLORS.grey
         end
@@ -1183,22 +1165,23 @@ function ui_item.build_desc_header(obj, sec, str)
         local cond_clr = utils_xml.get_color_con(con)
         cond_loss = safe_zone and 0 or cond_loss
         cond_str = UI_COLORS.teal ..
-        gc("st_krug_xd") ..
-        " " ..
-        UI_COLORS.grey .. gc("st_filter_descr") .. " " .. cond_clr .. tostring(con) .. "%" .. "\\n" .. UI_COLORS.grey
+            gc("st_krug_xd") ..
+            " " ..
+            UI_COLORS.grey .. gc("st_filter_descr") .. " " .. cond_clr .. tostring(con) .. "%" .. "\\n" .. UI_COLORS
+            .grey
         local dmg_check_str = (resist <= toxic_dmg) and (UI_COLORS.red .. gc("st_tank_doesnt_protect")) or
-        (UI_COLORS.grey_light .. round_idp(cond_loss * 10 * 60 * 100, 1) .. gc("st_tank_per_min"))
+            (UI_COLORS.grey_light .. round_idp(cond_loss * 10 * 60 * 100, 1) .. gc("st_tank_per_min"))
         cond_loss_str = UI_COLORS.teal ..
-        gc("st_krug_xd") ..
-        " " .. UI_COLORS.grey .. gc("st_filter_location_rate") .. " " .. dmg_check_str .. "\\n" .. UI_COLORS.grey
+            gc("st_krug_xd") ..
+            " " .. UI_COLORS.grey .. gc("st_filter_location_rate") .. " " .. dmg_check_str .. "\\n" .. UI_COLORS.grey
         -- Add compatible locations
         local locations = format_compatible_locations(resist)
         if locations then
             locations_str = UI_COLORS.teal ..
-            gc("st_krug_xd") ..
-            " " ..
-            UI_COLORS.grey ..
-            gc("st_compatible_locations") .. " " .. UI_COLORS.grey_light .. locations .. "\\n \\n" .. UI_COLORS.grey
+                gc("st_krug_xd") ..
+                " " ..
+                UI_COLORS.grey ..
+                gc("st_compatible_locations") .. " " .. UI_COLORS.grey_light .. locations .. "\\n \\n" .. UI_COLORS.grey
         else
             locations_str = "\\n \\n" .. UI_COLORS.grey
         end
@@ -1208,18 +1191,18 @@ function ui_item.build_desc_header(obj, sec, str)
     elseif (sfind(obj_sec, "oxygen_tank")) then
         local stats = get_item_stats(obj_sec)
         local dmg_check_str = (stats.air_immunity <= toxic_dmg) and (UI_COLORS.red .. gc("st_tank_doesnt_protect")) or
-        (UI_COLORS.grey_light .. round_idp(stats.flow_rate * 10 * 60 * 100, 1) .. gc("st_tank_per_min"))
+            (UI_COLORS.grey_light .. round_idp(stats.flow_rate * 10 * 60 * 100, 1) .. gc("st_tank_per_min"))
         cond_loss_str = UI_COLORS.teal ..
-        gc("st_krug_xd") ..
-        " " .. UI_COLORS.grey .. gc("st_tank_flow_rate") .. " " .. dmg_check_str .. "\\n" .. UI_COLORS.grey
+            gc("st_krug_xd") ..
+            " " .. UI_COLORS.grey .. gc("st_tank_flow_rate") .. " " .. dmg_check_str .. "\\n" .. UI_COLORS.grey
         -- Add compatible locations
         local locations = format_compatible_locations(stats.air_immunity)
         if locations then
             locations_str = UI_COLORS.teal ..
-            gc("st_krug_xd") ..
-            " " ..
-            UI_COLORS.grey ..
-            gc("st_compatible_locations") .. " " .. UI_COLORS.grey_light .. locations .. "\\n \\n" .. UI_COLORS.grey
+                gc("st_krug_xd") ..
+                " " ..
+                UI_COLORS.grey ..
+                gc("st_compatible_locations") .. " " .. UI_COLORS.grey_light .. locations .. "\\n \\n" .. UI_COLORS.grey
         else
             locations_str = "\\n \\n" .. UI_COLORS.grey
         end
@@ -1544,8 +1527,8 @@ function oxygen_tank:update(delta)
     end
 
     local tg = time_global()
-    if (tmr_dgr and tg < tmr_dgr) then return end
-    tmr_dgr = tg + 1000
+    if (self.tmr_dgr and tg < self.tmr_dgr) then return end
+    self.tmr_dgr = tg + 1000
 
     tank_degradation_and_protection(obj)
 
@@ -2403,15 +2386,6 @@ function equip_specific_filter(filter_obj)
 
     equip_filter_internal(equipment, filter_obj)
 end
-
--- Tank sections only (for QAW compatibility checks)
-local tank_sections_only = {
-    ["af_oxygen_tank_1"] = true,
-    ["af_oxygen_tank_1soviet"] = true,
-    ["af_oxygen_tank_2"] = true,
-    ["af_oxygen_tank_3"] = true,
-    ["af_oxygen_tank_3military"] = true,
-}
 
 -- Check if any tank is on belt (exported for QAW compatibility)
 function has_active_tank()
